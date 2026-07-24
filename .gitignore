@@ -4,9 +4,10 @@
 *
 
 # ==============================
-# 只放行以下 4 个文件
+# 只放行以下文件
 # ==============================
 !.gitignore
 !LICENSE
 !README.md
+!CHANGELOG.md
 !gemini-chat-export-enhanced.user.js

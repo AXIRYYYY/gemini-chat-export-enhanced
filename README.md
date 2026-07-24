@@ -25,6 +25,17 @@
 
 > ⚡ 本项目**不定期维护**，功能更新可能滞后于 Gemini 官方界面变化。
 
+### 🔌 输出格式兼容性
+
+本项目的导出输出格式与原分支有所不同，经过定制以适配以下配套工具：
+
+| 工具 | 说明 |
+|------|------|
+| **Memory ETL Tool-fi.html** | 对话记忆 ETL 清洗工具（切片拆分 / AI 清洗 / 去重合片 / 质检） |
+| **chat-editor.html** | 高性能对话编辑器（浏览 / 全文搜索 / 编辑 / 撤销 / 分页） |
+
+> 💡 上述配套工具目前尚未发布，后续计划合并为一个完整项目。
+
 ---
 
 ## ✨ 功能特性
@@ -52,10 +63,8 @@
 ### 方法一：直链安装（推荐，支持自动更新）
 
 1. 安装浏览器脚本管理器（如 [Tampermonkey](https://www.tampermonkey.net/)）
-2. 点击以下链接，Tampermonkey 会自动弹出安装窗口：
-   ```
+2. 点击以下链接，Tampermonkey 会自动弹出安装窗口：  
    https://raw.githubusercontent.com/AXIRYYYY/gemini-chat-export-enhanced/main/gemini-chat-export-enhanced.user.js
-   ```
 3. 点击 **安装** 即可
 4. 打开 [Google Gemini](https://gemini.google.com/app) 即可看到右侧备份面板
 
@@ -118,7 +127,7 @@
 
 ### 版本号规则
 
-当前版本：**v13.9**（对应 `@version 13.9.0`）
+当前版本：**v13.11**（对应 `@version 13.9.0`）
 
 版本号格式为 `主版本.次版本.修订号`：
 - 新功能 → 递增次版本号

@@ -9,6 +9,9 @@
 !.gitignore
 !LICENSE
 !README.md
+!README_EN.md
+!README_CHT.md
 !CHANGELOG.md
 !AGENTS.md
+!CONTRIBUTING.md
 !gemini-chat-export-enhanced.user.js

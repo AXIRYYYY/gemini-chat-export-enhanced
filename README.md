@@ -1,60 +1,49 @@
-# Gemini Chat Export Enhanced（Legacy Fork）
+# 一键批量导出所有 Gemini 聊天记录，再也不用一条条复制了
 
-> ⚠️ **重要提示**  
-> 本项目是基于 [Sxuan-Coder/gemini_chat_export](https://github.com/Sxuan-Coder/gemini_chat_export) 
-> **早期版本**（2025年9月9日初始提交）开发的个人定制分支。  
-> 
-> 🔥 **原项目已经更新为功能更强大的 Chrome 插件版！**  
-> 新版本命名为 [AIhubEnhenced](https://github.com/Sxuan-Coder/AIhubEnhenced/releases)，支持：
->
-> - 多平台（Gemini、GPT、Grok 等主流 AI 聊天平台）
-> - 智能对话目录、拖拽定位
-> - 更稳定的批量导出体验
-> 
-> **强烈建议普通用户使用原作者的 Chrome 插件版本！**  
-> 👉 [下载 AIhubEnhenced Chrome 插件](https://github.com/Sxuan-Coder/AIhubEnhenced/releases)
+[![License](https://img.shields.io/github/license/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/stargazers)
+[![Version](https://img.shields.io/badge/version-13.12-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
+[![Tampermonkey](https://img.shields.io/badge/Tampermonkey-✓-brightgreen)](https://www.tampermonkey.net/)
+
+简体中文 | [English](./README_EN.md) | [繁體中文](./README_CHT.md)
+
+**Gemini Chat Export Enhanced** 是一个 [Tampermonkey 油猴脚本](https://www.tampermonkey.net/)，安装在浏览器后，Gemini 页面右侧会出现一个备份面板。点击即可将当前对话导出为 Markdown / JSON / TXT 文件。更支持**一键扫描侧边栏所有对话，自动逐条批量导出**，彻底告别手动逐条复制的痛苦。
+
+基于 [Sxuan-Coder/gemini_chat_export](https://github.com/Sxuan-Coder/gemini_chat_export) 早期版本深度定制，针对 Gemini 新版 UI 做了全面适配。
 
 ---
 
-## 📖 关于本项目
+## 📸 效果预览
 
-本工具是 Gemini 聊天记录导出工具的**用户脚本版（Tampermonkey）**，基于原作者 Sxuan-Coder 的 [初始提交](https://github.com/Sxuan-Coder/gemini_chat_export/commit/dabbb34b68cd00917b25dc92a7eedc02b4ebf00e) 深度定制。适合：
-- 偏好用户脚本（Tampermonkey）而非浏览器插件的用户
-- 需要批量自动导出侧边栏中所有对话的用户
-- 想要在界面中自定义滚动延迟等参数的用户
+> 🚧 截图即将更新。欢迎贡献——录一段 30 秒的操作演示即可。
 
-> ⚡ 本项目**不定期维护**，功能更新可能滞后于 Gemini 官方界面变化。
+| 想看到 | 建议截图内容 |
+|--------|-------------|
+| 备份面板 | Gemini 页面右侧出现的导出面板，展开显示各按钮 |
+| 单对话导出 | 点击"导出当前对话"后弹出下载文件的画面 |
+| 批量导出流程 | 点击"扫描/累积"→ 点"导出队列 (N)"→ 自动逐个导出 |
 
-### 🔌 输出格式兼容性
-
-本项目的导出输出格式与原分支有所不同，经过定制以适配以下配套工具：
-
-| 工具 | 说明 |
-|------|------|
-| **Memory ETL Tool-fi.html** | 对话记忆 ETL 清洗工具（切片拆分 / AI 清洗 / 去重合片 / 质检） |
-| **chat-editor.html** | 高性能对话编辑器（浏览 / 全文搜索 / 编辑 / 撤销 / 分页） |
-
-> 💡 上述配套工具目前尚未发布，后续计划合并为一个完整项目。
+*（截图放在仓库根目录 `screenshots/` 文件夹，README 会自动引用）*
 
 ---
 
 ## ✨ 功能特性
 
-### 原作者基础功能
-- 支持 **TXT / JSON / Markdown** 三种导出格式
-- 自动滚动加载并捕获完整对话历史
-- 导出 Canvas / 代码块 / 文档内容
-- AI 思考过程（Thinking）捕获和导出
+### 核心功能
+- 📄 支持 **Markdown / JSON / TXT** 三种导出格式
+- 🔄 自动滚动加载并捕获完整对话历史（含长对话场景）
+- 🎨 导出 Canvas 绘图、代码块、文档内容
+- 🧠 AI 思考过程（Thinking）捕获和导出
+- 📊 完整解析 HTML 表格为 Markdown 格式
 
-### 本版本增强功能
+### 🔥 增强功能（本版本独有）
 - 🗂️ **批量导出**：扫描侧边栏对话列表，一键自动逐条导出所有对话
 - ⏸️ **暂停/继续**：批量处理过程中可随时暂停和恢复
 - ⚡ **中断保存**：处理过程中支持"立即停止并导出当前对话"或"放弃任务"
 - 🧠 **智能标题提取**：适配 Gemini 新版 UI，多种备选逻辑确保标题正确
 - ⚙️ **可调参数**：界面内直接调节滚动延迟和历史加载延迟（适配不同网络环境）
-- 📊 **表格支持**：完整解析 HTML 表格为 Markdown 格式
 - ⌨️ **Alt+Q 快捷键**：快速隐藏/显示备份面板
-- 🎨 **暗色主题面板**：固定暗色 UI，简洁清晰
+- 🎨 **暗色主题面板**：固定暗色 UI，与 Gemini 界面协调
 
 ---
 
@@ -106,7 +95,7 @@
 
 ## 🔄 版本更新
 
-本脚本使用油猴 (Tampermonkey) 标准的 `@version` 字段进行版本管理。
+本脚本使用油猴标准的 `@version` 字段进行版本管理。
 
 ### 自动更新（推荐）
 
@@ -127,7 +116,7 @@
 
 ### 版本号规则
 
-当前版本：**v13.11**（对应 `@version 13.9.0`）
+当前版本：**v13.12**（对应 `@version 13.12.0`）
 
 版本号格式为 `主版本.次版本.修订号`：
 - 新功能 → 递增次版本号
@@ -146,13 +135,21 @@
 
 ---
 
+## 🤝 参与贡献
+
+欢迎提 Issue 报告 Bug 或建议新功能，也欢迎直接提 PR 参与开发。详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+
+---
+
 ## 🔗 相关链接
 
 | 项目 | 链接 |
 |------|------|
-| 原项目（用户脚本版） | [Sxuan-Coder/gemini_chat_export](https://github.com/Sxuan-Coder/gemini_chat_export) |
-| 原项目（Chrome 插件版）🔥 推荐 | [AIhubEnhenced Releases](https://github.com/Sxuan-Coder/AIhubEnhenced/releases) |
 | 本项目仓库 | [AXIRYYYY/gemini-chat-export-enhanced](https://github.com/AXIRYYYY/gemini-chat-export-enhanced) |
+| 原项目（用户脚本版） | [Sxuan-Coder/gemini_chat_export](https://github.com/Sxuan-Coder/gemini_chat_export) |
+| 原作者的 Chrome 插件版 | [AIhubEnhenced Releases](https://github.com/Sxuan-Coder/AIhubEnhenced/releases) |
+
+> ℹ️ 如果你需要多平台支持（Gemini / GPT / Grok），推荐试试原作者的 [AIhubEnhenced Chrome 插件](https://github.com/Sxuan-Coder/AIhubEnhenced/releases)。本脚本专注于为偏好 Tampermonkey 用户脚本和需要批量导出 Gemini 对话的用户提供解决方案。
 
 ---
 

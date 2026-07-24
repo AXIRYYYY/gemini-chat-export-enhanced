@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/stargazers)
-[![Version](https://img.shields.io/badge/version-13.12-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
+[![Version](https://img.shields.io/badge/version-13.11-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-✓-brightgreen)](https://www.tampermonkey.net/)
 
 [简体中文](./README.md) | English | [繁體中文](./README_CHT.md)
@@ -116,7 +116,7 @@ If you installed via **Method 2 (Manual)**:
 
 ### Versioning Scheme
 
-Current version: **v13.12** (`@version 13.12.0`)
+Current version: **v13.11** (`@version 13.11.0`)
 
 Version format: `major.minor.patch`:
 - New features → increment minor version

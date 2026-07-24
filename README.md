@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/stargazers)
-[![Version](https://img.shields.io/badge/version-13.12-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
+[![Version](https://img.shields.io/badge/version-13.11-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-✓-brightgreen)](https://www.tampermonkey.net/)
 
 简体中文 | [English](./README_EN.md) | [繁體中文](./README_CHT.md)
@@ -116,7 +116,7 @@
 
 ### 版本号规则
 
-当前版本：**v13.12**（对应 `@version 13.12.0`）
+当前版本：**v13.11**（对应 `@version 13.11.0`）
 
 版本号格式为 `主版本.次版本.修订号`：
 - 新功能 → 递增次版本号

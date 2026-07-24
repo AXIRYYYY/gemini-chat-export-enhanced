@@ -144,8 +144,8 @@ while (!el && retries < 10) {
 3. `Copy-Item` 新版 → `gemini-chat-export-enhanced.user.js`
 4. `edit` 替换 header（增强版 `@name` `@author` `@updateURL` 等）
 5. 更新 `CHANGELOG.md`
-6. 更新 `README.md` 版本号
-7. `git add ... && git commit -m "..." && git push origin main`
+6. 更新 3 语言 README 版本号（每文件 2 处：badge + 版本文字）= 6 处
+7. `git add ... && git commit -m "..." && git push origin main``
 
 ### amend / force push
 
@@ -160,3 +160,71 @@ while (!el && retries < 10) {
 - [ ] 发布文件 header 的 `@name` 有没有版本号？→ 不能有
 - [ ] `Set-Content` 有没有用于写 `.user.js`？→ 不能用
 - [ ] `abandonSignal` 在 task 开始/结束有没有重置？→ 两端都要 `= false`
+
+## 9 历史踩坑记录
+
+### 9.1 重构嵌套函数调用时闭括号必检查
+
+将 `p.appendChild(func(...))` 拆分为变量赋值时，**外层 `))` 中的一个是 `p.appendChild(` 的闭括号**，拆分后必须去掉：
+
+```javascript
+// ❌ 错误（v13.12 实际踩坑）：拆分后忘记去掉外层 `)`
+const x = func(label, val, (e) => { ... }));
+p.appendChild(x);
+
+// ✅ 正确
+const x = func(label, val, (e) => { ... });
+p.appendChild(x);
+```
+
+**规律**：拆分嵌套调用时，数清楚每一层括号的匹配关系，尤其是 `));` 结尾的嵌套调用。
+
+### 9.2 Tampermonkey 沙箱不能直接调用 localStorage
+
+脚本有 `@grant` 时会运行在沙箱环境，`localStorage.getItem()` / `setItem()` 可能抛出 SecurityError，**整个 `UI.create()` 会中断，面板不显示**。
+
+```javascript
+// ❌ 错误：直接调用
+const saved = localStorage.getItem('key');
+
+// ✅ 正确：try-catch 包裹
+const saved = (() => { try { return localStorage.getItem('key'); } catch(e) { return null; } })();
+```
+
+规律：
+- 新增任何持久化存储逻辑，必须先看 `@grant` 字段
+- 沙箱环境安全做法：`try-catch` + fallback 默认值
+- 或改用 `GM_getValue` / `GM_setValue`（需添加对应 `@grant`）
+
+### 9.3 版本回退：优先 reset --mixed + amend，不创建 revert commit
+
+当需要撤回某次版本的脚本改动但保留同次 commit 中其他文件的改动时：
+
+```bash
+# 1. 回退到基础 commit，保留工作区（所有文件的最新版本）
+git reset --mixed <base-commit>
+
+# 2. 只把脚本文件恢复为旧版本
+git restore --source <old-commit> -- gemini-chat-export-enhanced.user.js
+
+# 3. 暂存、amend 合并到 base-commit
+git add -A
+git commit --amend -m "<新消息>"
+
+# 4. force push（单人 repo 安全）
+git push --force origin main
+```
+
+这样做比创建 revert commit 更干净：git log 不留冗余的 revert 痕迹。
+
+### 9.4 版本号变更必须同步 3 语言 × 2 位置
+
+每次 bump 或 revert 版本号，必须同时更新 6 处（3 个 README × 每文件 2 处）：
+
+| 文件 | 位置 |
+|------|------|
+| `README.md` | badge: `version-X.Y.Z-brightgreen` + 版本文字 |
+| `README_EN.md` | badge + 版本文字 |
+| `README_CHT.md` | badge + 版本文字 |
+| `gemini-chat-export-enhanced.user.js` | `@version` 字段 |
+| `CHANGELOG.md` | 版本标题 |

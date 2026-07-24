@@ -1,8 +1,9 @@
 // ==UserScript==
-// @name         Gemini 全量备份工具增强�?(Gemini Chat Export Enhanced)
+// @name         Gemini 全量备份工具增强版 (Gemini Chat Export Enhanced)
 // @namespace    http://tampermonkey.net/
 // @version      13.11.0
-// @description  基于 Sxuan-Coder/gemini_chat_export 早期版本深度定制，新增批量导�?暂停/中断/可调参数/表格渲染等功能。适配 Gemini 新版 UI�?// @author       Sxuan-Coder (Original) / AXIRYYYY (Enhanced Fork)
+// @description  基于 Sxuan-Coder/gemini_chat_export 早期版本深度定制，新增批量导出/暂停/中断/可调参数/表格渲染等功能。适配 Gemini 新版 UI。
+// @author       Sxuan-Coder (Original) / AXIRYYYY (Enhanced Fork)
 // @match        https://gemini.google.com/*
 // @grant        GM_addStyle
 // @icon         https://www.gstatic.com/images/branding/product/1x/gemini_gradient_icon_48dp.png
@@ -26,8 +27,8 @@
     const State = {
         isWorking: false,
         stopSignal: false,
-        pauseSignal: false, // [MODIFIED] 新增暂停状�?
-        abandonSignal: false, // [v13.11] 放弃任务标志，置 true 时跳过所有下�?
+        pauseSignal: false, // [MODIFIED] 新增暂停状态
+        abandonSignal: false, // [v13.11] 放弃任务标志，置 true 时跳过所有下载
         collectedData: new Map(),
         sidebarQueue: new Map(),
         format: 'md',
@@ -43,7 +44,7 @@
             return el;
         },
 
-        // --- 🔥 核心引擎：递归 DOM 解析�?(v13.7 Fix) 🔥 ---
+        // --- 🔥 核心引擎：递归 DOM 解析器 (v13.7 Fix) 🔥 ---
         recursiveParse: (node) => {
             if (!node) return "";
 
@@ -56,7 +57,7 @@
             if (node.nodeType === Node.ELEMENT_NODE) {
                 const tag = node.tagName.toLowerCase();
 
-                // 代码�?
+                // 代码块
                 if (tag === 'code-block' || tag === 'pre') {
                     const lang = node.getAttribute('data-language') || '';
                     return `\n\n\`\`\`${lang}\n${node.textContent.trim()}\n\`\`\`\n\n`;
@@ -74,7 +75,7 @@
                         const cells = Array.from(tr.querySelectorAll('td, th'));
 
                         const rowContent = "| " + cells.map(c => {
-                            // 递归解析单元�?(此时 c �?td/th，下面必须允许递归)
+                            // 递归解析单元格 (此时 c 是 td/th，下面必须允许递归)
                             let cellText = DOM.recursiveParse(c).trim();
                             cellText = cellText.replace(/\|/g, '\\|');
                             cellText = cellText.replace(/[\r\n]+/g, '<br>');
@@ -91,12 +92,12 @@
                     return tableMd + "\n";
                 }
 
-                // 递归子节�?
+                // 递归子节点
                 let childrenText = "";
                 Array.from(node.childNodes).forEach(child => {
-                    // 🔥 关键修复：从黑名单中移除 td �?th
-                    // 只有 tr, thead, tbody 这些纯结构标签不需要在这里递归（因�?table 逻辑已经处理了它们）
-                    // td �?th 必须递归，否则无法读取里面的 span/text
+                    // 🔥 关键修复：从黑名单中移除 td 和 th
+                    // 只有 tr, thead, tbody 这些纯结构标签不需要在这里递归（因为 table 逻辑已经处理了它们）
+                    // td 和 th 必须递归，否则无法读取里面的 span/text
                     if (!['tr', 'thead', 'tbody', 'table'].includes(tag)) {
                         childrenText += DOM.recursiveParse(child);
                     }
@@ -150,20 +151,20 @@
         },
 
         // ============================================================
-        // [v13.92 修改] 适配 Gemini �?UI 的侧边栏对话列表选择�?
-        // �?UI: 对话项使�?.conversation 类，标题使用 .conversation-title �?
-        // �?UI: 对话项使�?gem-nav-list-item[data-test-id="conversation"] 自定义元�?
-        //        标题使用 .title-text �?
+        // [v13.92 修改] 适配 Gemini 新 UI 的侧边栏对话列表选择器
+        // 旧 UI: 对话项使用 .conversation 类，标题使用 .conversation-title 类
+        // 新 UI: 对话项使用 gem-nav-list-item[data-test-id="conversation"] 自定义元素
+        //        标题使用 .title-text 类
         // ============================================================
         getChatItems: (debug = false) => {
-            // [v13.92] 修改选择�? .conversation �?gem-nav-list-item[data-test-id="conversation"]
+            // [v13.92] 修改选择器: .conversation → gem-nav-list-item[data-test-id="conversation"]
             const items = Array.from(document.querySelectorAll('gem-nav-list-item[data-test-id="conversation"]'));
             const results = [];
             items.forEach((el, index) => {
-                // [v13.92] 修改标题选择�? .conversation-title �?.title-text
+                // [v13.92] 修改标题选择器: .conversation-title → .title-text
                 if (!el.querySelector('.title-text')) return;
                 const titleEl = el.querySelector('.title-text');
-                let title = titleEl ? titleEl.innerText : "未命名对�?;
+                let title = titleEl ? titleEl.innerText : "未命名对话";
                 title = title.replace(/[\r\n]/g, "").trim();
                 const jslog = el.getAttribute('jslog') || "";
                 const idMatch = jslog.match(/c_[a-f0-9]+/);
@@ -177,7 +178,7 @@
         },
 
         findMainScroller: () => {
-            // [v13.10] 从对话元素向上遍历找真正的可滚动容器，根治页面级抖动
+            // [v13.12] 从对话元素向上遍历，退路启发式扫描，绝不返回 window
             const chatEl = document.querySelector('user-query, model-response');
             if (chatEl) {
                 let el = chatEl.parentElement;
@@ -189,22 +190,33 @@
                     el = el.parentElement;
                 }
             }
-            return window;
+            // 退路：启发式扫描所有容器，找最大的非侧边栏可滚动元素
+            let max = 0, target = null;
+            document.querySelectorAll('div, main, infinite-scroller').forEach(el => {
+                if (el.offsetParent && el.scrollHeight > el.clientHeight + 50) {
+                    const s = window.getComputedStyle(el);
+                    if (['auto', 'scroll'].includes(s.overflowY)) {
+                        const rect = el.getBoundingClientRect();
+                        if (rect.left > 200 && el.scrollHeight > max) { max = el.scrollHeight; target = el; }
+                    }
+                }
+            });
+            return target || document.documentElement;
         },
 
         // ============================================================
-        // [v13.9 修改] 适配 Gemini �?UI �?当前选中对话"选择�?
-        // �?UI: 当前对话使用 .conversation.selected �?
-        // �?UI: 当前对话�?<a> 链接上同时有 is-active �?aria-current="page"
-        //        is-active �?<a> 元素上，不在父级 gem-nav-list-item �?
-        //        标题使用 .title-text �?
+        // [v13.9 修改] 适配 Gemini 新 UI 的"当前选中对话"选择器
+        // 旧 UI: 当前对话使用 .conversation.selected 类
+        // 新 UI: 当前对话的 <a> 链接上同时有 is-active 和 aria-current="page"
+        //        is-active 在 <a> 元素上，不在父级 gem-nav-list-item 上
+        //        标题使用 .title-text 类
         // ============================================================
         getTitle: () => {
-            // [v13.9] 选择器改为查�?<a> 标签上的 is-active + aria-current="page"
+            // [v13.9] 选择器改为查找 <a> 标签上的 is-active + aria-current="page"
             // 因为 is-active 类在 <a> 元素上，而非父级 gem-nav-list-item
             const selectedItem = document.querySelector('a.is-active[aria-current="page"]');
             if (selectedItem) {
-                // [v13.92] 标题选择�? .conversation-title �?.title-text（保持不变）
+                // [v13.92] 标题选择器: .conversation-title → .title-text（保持不变）
                 const titleEl = selectedItem.querySelector('.title-text');
                 if (titleEl) return titleEl.innerText.trim();
             }
@@ -245,6 +257,12 @@
 
         captureCurrentChat: async () => {
             State.collectedData.clear();
+            // [v13.12] 等新对话内容渲染到位再找 scroller，防止导航后空白期导致退路命中 window
+            let waitAttempts = 0;
+            while (!document.querySelector('user-query, model-response') && waitAttempts < 10 && !State.stopSignal) {
+                await Core.wait(300);
+                waitAttempts++;
+            }
             const scroller = DOM.findMainScroller();
             const isWindow = scroller === window || scroller === document.documentElement;
 
@@ -266,14 +284,14 @@
                     noChangeCount = 0;
                 } else {
                     noChangeCount++;
-                    UI.log(`⚠️ 未变�?(${noChangeCount}/10)，执行深�?..`);
+                    UI.log(`⚠️ 未变化 (${noChangeCount}/10)，执行深蹲...`);
 
                     if (isWindow) window.scrollBy(0, 300); else scroller.scrollBy(0, 300);
                     await Core.wait(300);
                     if (isWindow) window.scrollTo(0, 0); else scroller.scrollTop = 0;
 
                     if (noChangeCount >= 10) {
-                        UI.log('�?历史已全部加�?);
+                        UI.log('✅ 历史已全部加载');
                         break;
                     }
                 }
@@ -285,7 +303,7 @@
                 let sameH = 0;
                 while (!State.stopSignal) {
                     const newFound = Core.extractNodes();
-                    if (newFound > 0) UI.log(`📦 新增 ${newFound} �?..`);
+                    if (newFound > 0) UI.log(`📦 新增 ${newFound} 条...`);
 
                     const top = isWindow ? window.scrollY : scroller.scrollTop;
                     const total = isWindow ? document.documentElement.scrollHeight : scroller.scrollHeight;
@@ -302,11 +320,11 @@
                     await Core.wait(State.scrollDelay);
                 }
             } else {
-                UI.log('�?已中断，准备保存...');
+                UI.log('⚡ 已中断，准备保存...');
             }
 
             if (!State.abandonSignal) Core.extractNodes();
-            UI.log(`�?抓取结束 (�?${State.collectedData.size} �?`);
+            UI.log(`✅ 抓取结束 (共 ${State.collectedData.size} 条)`);
         },
 
         download: (customTitle = null) => {
@@ -315,7 +333,7 @@
                 return;
             }
             if (State.collectedData.size === 0) {
-                UI.log('⚠️ 内容为空，跳�?);
+                UI.log('⚠️ 内容为空，跳过');
                 return;
             }
 
@@ -327,7 +345,7 @@
             });
 
             let finalTitle = customTitle || DOM.getTitle();
-            if (!finalTitle || finalTitle.includes("未命�?) || finalTitle === "Gemini" || finalTitle.length < 2) {
+            if (!finalTitle || finalTitle.includes("未命名") || finalTitle === "Gemini" || finalTitle.length < 2) {
                 const firstUser = list.find(x => x.role === 'user');
                 finalTitle = firstUser ? firstUser.content.substring(0, 20).replace(/[\r\n]/g, '') : "Gemini_Backup";
             }
@@ -364,7 +382,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            UI.log(`💾 已保�? ${finalTitle}`);
+            UI.log(`💾 已保存: ${finalTitle}`);
         },
 
         accumulateScan: () => {
@@ -385,13 +403,13 @@
             if (State.sidebarQueue.size === 0) {
                 Core.accumulateScan();
                 if (State.sidebarQueue.size === 0) {
-                    alert('队列为空。请先手动滚动侧边栏，然后点击【�?扫描】�?);
+                    alert('队列为空。请先手动滚动侧边栏，然后点击【🔍 扫描】。');
                     return;
                 }
             }
 
             const allChats = Array.from(State.sidebarQueue.values());
-            const confirmed = confirm(`📦 队列中共�?${allChats.length} 个对话。\n\n点击【确定】开始导出。\n(脚本将自动点击每个对话，请勿操作鼠标)`);
+            const confirmed = confirm(`📦 队列中共有 ${allChats.length} 个对话。\n\n点击【确定】开始导出。\n(脚本将自动点击每个对话，请勿操作鼠标)`);
             if (!confirmed) return;
 
             State.isWorking = true; State.stopSignal = false; State.pauseSignal = false; State.abandonSignal = false;
@@ -403,31 +421,36 @@
 
                 // [MODIFIED] 增加暂停循环
                 while (State.pauseSignal && !State.stopSignal) {
-                    await Core.wait(500); // 暂停时每半秒检查一次状�?
+                    await Core.wait(500); // 暂停时每半秒检查一次状态
                 }
-                if (State.stopSignal) break; // 从暂停中恢复后再次检查停止信�?
+                if (State.stopSignal) break; // 从暂停中恢复后再次检查停止信号
 
                 const chat = allChats[i];
                 let safeTitle = chat.title;
 
                 UI.log(`\n▶️ [${i + 1}/${allChats.length}] 处理: ${safeTitle.substring(0, 15)}...`);
 
-                // [v13.11] 改用 chat.linkEl�?a> 标签）点击，gem-nav-list-item 本身不触发导�?
-                if (chat.el.classList.contains('selected')) {
+                // [v13.12] 点击 <a> 导航，用旧节点消失 + 新节点出现确认切换成功
+                const isActive = chat.linkEl && chat.linkEl.classList.contains('is-active');
+                if (isActive || chat.el.classList.contains('selected')) {
                     UI.log(`ℹ️ 跳过切换 (当前已选中)...`);
                 } else {
-                    try {
-                        const clickTarget = chat.linkEl || chat.el;
-                        clickTarget.click();
-                        // [v13.11] 等新对话�?user-query 元素出现后再继续
+                    const oldFirstNode = document.querySelector('user-query');
+                    const clickTarget = chat.linkEl || chat.el;
+                    clickTarget.click();
+                    if (oldFirstNode) {
+                        // 等旧 DOM 被移除 = 真正切换了
                         const waitStart = Date.now();
                         while (Date.now() - waitStart < CONFIG.batchPageLoad) {
-                            if (document.querySelector('user-query, model-response')) break;
-                            await Core.wait(200);
+                            if (!document.contains(oldFirstNode)) break;
+                            await Core.wait(300);
                         }
-                    } catch (e) {
-                        UI.log(`⚠️ 点击失效，跳�?..`);
-                        continue;
+                    }
+                    // 等新内容出现
+                    const contentStart = Date.now();
+                    while (Date.now() - contentStart < CONFIG.batchPageLoad) {
+                        if (document.querySelector('user-query')) break;
+                        await Core.wait(300);
                     }
                 }
 
@@ -441,7 +464,7 @@
             State.pauseSignal = false;
             State.abandonSignal = false;
             UI.updateUiState('idle');
-            if (!State.stopSignal && !State.abandonSignal) alert('🎉 队列备份完成�?);
+            if (!State.stopSignal && !State.abandonSignal) alert('🎉 队列备份完成！');
         }
     };
 
@@ -460,7 +483,7 @@
 
             const h = DOM.el('div', { display: 'flex', justifyContent: 'space-between', marginBottom: '12px' });
             h.appendChild(DOM.el('span', { fontWeight: 'bold', fontSize: '14px' }, 'Gemini 备份 v13.11'));
-            const close = DOM.el('span', { cursor: 'pointer', opacity: '0.7' }, '�?);
+            const close = DOM.el('span', { cursor: 'pointer', opacity: '0.7' }, '✕');
             close.onclick = () => p.style.display = 'none';
             h.appendChild(close);
             p.appendChild(h);
@@ -527,7 +550,7 @@
             const bBatch = DOM.el('button', {
                 width: '100%', padding: '10px', marginBottom: '8px', background: '#a8c7fa',
                 color: '#062e6f', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600'
-            }, '🗂�?导出队列中所有对�?);
+            }, '🗂️ 导出队列中所有对话');
             bBatch.onclick = Core.runBatchFromQueue;
             p.appendChild(bBatch);
             UI.batchBtn = bBatch;
@@ -554,10 +577,10 @@
             const bSaveNow = DOM.el('button', {
                 width: '100%', padding: '10px', marginBottom: '8px', background: '#ff9800',
                 color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', display: 'none'
-            }, '�?立即停止并导�?);
+            }, '⚡ 立即停止并导出');
             bSaveNow.onclick = () => {
                 if (State.isWorking) {
-                    UI.log('�?用户请求中断，将在当前任务完成后停止...');
+                    UI.log('⚡ 用户请求中断，将在当前任务完成后停止...');
                     State.stopSignal = true;
                 }
             };
@@ -567,11 +590,11 @@
             const bStop = DOM.el('button', {
                 width: '100%', padding: '10px', marginBottom: '8px', background: '#f28b82',
                 color: '#601410', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', display: 'none'
-            }, '�?放弃任务');
+            }, '⏹ 放弃任务');
             bStop.onclick = () => {
                 State.stopSignal = true;
-                State.abandonSignal = true; // [v13.11] 放弃标志，阻�?download
-                State.collectedData.clear(); // 放弃任务时清空已收集的数�?
+                State.abandonSignal = true; // [v13.11] 放弃标志，阻止 download
+                State.collectedData.clear(); // 放弃任务时清空已收集的数据
                 UI.log('🛑 正在放弃，数据已清空...');
             };
             p.appendChild(bStop);
@@ -594,13 +617,13 @@
             UI.root = p;
         },
 
-        // [MODIFIED] 采用专业�?环形缓冲�?模式重构日志函数，并优化滚动逻辑
+        // [MODIFIED] 采用专业的"环形缓冲区"模式重构日志函数，并优化滚动逻辑
         log: (msg) => {
             if (!UI.logEl) return;
 
-            const MAX_LOG_LINES = 200; // 定义日志区域最多保留的DOM节点�?
+            const MAX_LOG_LINES = 200; // 定义日志区域最多保留的DOM节点数
 
-            // 1. 创建新的日志行元�?
+            // 1. 创建新的日志行元素
             const time = new Date().toLocaleTimeString();
             const logLine = document.createElement('div');
             logLine.textContent = `[${time}] ${msg}`;
@@ -613,27 +636,27 @@
                 UI.logEl.removeChild(UI.logEl.firstChild);
             }
 
-            // 4. 平滑滚动到底�?
-            // 使用 requestAnimationFrame 可以确保滚动操作在下一次浏览器绘制前执行，更平�?
+            // 4. 平滑滚动到底部
+            // 使用 requestAnimationFrame 可以确保滚动操作在下一次浏览器绘制前执行，更平滑
             requestAnimationFrame(() => {
                 UI.logEl.scrollTop = UI.logEl.scrollHeight;
             });
         },
         updateBatchBtn: () => {
-            if (UI.batchBtn) UI.batchBtn.innerText = `🗂�?导出队列 (${State.sidebarQueue.size})`;
+            if (UI.batchBtn) UI.batchBtn.innerText = `🗂️ 导出队列 (${State.sidebarQueue.size})`;
         },
-        clearLog: () => { if (UI.logEl) UI.logEl.innerText = '>> 开始任�?..\n'; },
+        clearLog: () => { if (UI.logEl) UI.logEl.innerText = '>> 开始任务...\n'; },
 
         // [MODIFIED] 统一UI状态管理器
         updateUiState: (state) => {
             const { exportCurrent, scan, exportBatch, pause, stopAndSave, abandon } = UI.buttons;
 
-            // 默认隐藏所有控制按�?
+            // 默认隐藏所有控制按钮
             Object.values(UI.buttons).forEach(btn => btn.style.display = 'none');
 
             switch (state) {
                 case 'working_single':
-                    stopAndSave.innerText = '�?立即停止并导�?;
+                    stopAndSave.innerText = '⚡ 立即停止并导出';
                     stopAndSave.style.display = 'block';
                     abandon.style.display = 'block';
                     break;
@@ -656,7 +679,7 @@
                     exportCurrent.style.display = 'block';
                     scan.style.display = 'block';
                     exportBatch.style.display = 'block';
-                    if (state === 'idle') UI.log('>> 任务结束�?);
+                    if (state === 'idle') UI.log('>> 任务结束。');
                     break;
             }
         },

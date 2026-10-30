@@ -2,12 +2,14 @@
 
 [![License](https://img.shields.io/github/license/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/stargazers)
-[![Version](https://img.shields.io/badge/version-13.11-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
+[![Version](https://img.shields.io/badge/version-13.13.3-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-✓-brightgreen)](https://www.tampermonkey.net/)
 
 [简体中文](./README.md) | English | [繁體中文](./README_CHT.md)
 
 **Gemini Chat Export Enhanced** is a [Tampermonkey userscript](https://www.tampermonkey.net/). Once installed in your browser, a backup panel appears on the right side of the Gemini page. Click to export the current conversation as Markdown / JSON / TXT files. It also supports **one-click scanning of all conversations in the sidebar and automatic batch export**, completely eliminating the pain of manually copying them one by one.
+
+The panel can be collapsed; on `gemini.google.com/usage`, a flat usage alert card appears in the bottom-right corner (5-hour / weekly, reads the current page only, no extra requests).
 
 Deeply customized from an early version of [Sxuan-Coder/gemini_chat_export](https://github.com/Sxuan-Coder/gemini_chat_export), fully adapted for the new Gemini UI.
 
@@ -22,6 +24,7 @@ Deeply customized from an early version of [Sxuan-Coder/gemini_chat_export](http
 | Backup Panel | The export panel appearing on the right side of Gemini, with all buttons visible |
 | Single Chat Export | The download popup after clicking "Export Current Chat" |
 | Batch Export Flow | Click "Scan/Accumulate" → Click "Export Queue (N)" → Auto-export one by one |
+| Usage Alert Card | The flat alert card in the bottom-right corner of the Gemini usage page (/usage) |
 
 *(Place screenshots in the `screenshots/` folder at the repo root)*
 
@@ -43,6 +46,8 @@ Deeply customized from an early version of [Sxuan-Coder/gemini_chat_export](http
 - 🧠 **Smart Title Extraction**: Adapted for the new Gemini UI with multiple fallback logic for correct titles
 - ⚙️ **Adjustable Parameters**: Tune scroll delay and history loading delay directly in the UI (adapts to different network conditions)
 - ⌨️ **Alt+Q Shortcut**: Quickly hide/show the backup panel
+- 🪟 **Collapsible Panel**: Click "－" in the title bar to shrink it to a small `G` tab in the top-right corner; click the tab or press `Alt+W` to expand; the collapsed state is remembered
+- 📊 **Gemini Usage Alert**: Only on `gemini.google.com/usage`; reads the page's 5-hour / weekly usage, turns yellow at ≥90% and red at 100%, and forecasts whether the quota will run out before reset (the page has only these two pools, no monthly quota)
 - 🎨 **Dark Theme Panel**: Fixed dark UI that blends well with Gemini
 
 ---
@@ -86,10 +91,23 @@ Deeply customized from an early version of [Sxuan-Coder/gemini_chat_export](http
 
 > 💡 Do **not touch the mouse** during batch export — let the script do its work.
 
+### Collapse / Expand the Panel
+1. Click **－** in the title bar; the panel shrinks to a small `G` tab in the top-right corner
+2. Click the tab or press **Alt + W** to expand
+3. The collapsed state is remembered after a page reload
+
+### Usage Alert (on /usage only)
+1. Open `https://gemini.google.com/usage`
+2. A flat usage card appears in the bottom-right corner (60% of the page width)
+3. It shows the 5-hour / weekly percentages, reset times, and a forecast of whether the quota will run out before reset
+4. The left stripe turns yellow/red when there is risk; hover over long text to see the full message; click **✕** to dismiss this alert
+5. The card only appears on /usage — chat pages never show potentially stale usage numbers
+
 ### Keyboard Shortcuts
 | Shortcut | Function |
 |----------|----------|
 | **Alt + Q** | Hide/Show the backup panel |
+| **Alt + W** | Collapse/Expand the backup panel |
 
 ---
 
@@ -116,7 +134,7 @@ If you installed via **Method 2 (Manual)**:
 
 ### Versioning Scheme
 
-Current version: **v13.11** (`@version 13.11.0`)
+Current version: **v13.13.3** (`@version 13.13.3`)
 
 Version format: `major.minor.patch`:
 - New features → increment minor version

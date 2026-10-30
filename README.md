@@ -2,12 +2,14 @@
 
 [![License](https://img.shields.io/github/license/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/AXIRYYYY/gemini-chat-export-enhanced)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced/stargazers)
-[![Version](https://img.shields.io/badge/version-13.11-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
+[![Version](https://img.shields.io/badge/version-13.13.3-brightgreen)](https://github.com/AXIRYYYY/gemini-chat-export-enhanced)
 [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-✓-brightgreen)](https://www.tampermonkey.net/)
 
 简体中文 | [English](./README_EN.md) | [繁體中文](./README_CHT.md)
 
 **Gemini Chat Export Enhanced** 是一个 [Tampermonkey 油猴脚本](https://www.tampermonkey.net/)，安装在浏览器后，Gemini 页面右侧会出现一个备份面板。点击即可将当前对话导出为 Markdown / JSON / TXT 文件。更支持**一键扫描侧边栏所有对话，自动逐条批量导出**，彻底告别手动逐条复制的痛苦。
+
+面板支持折叠；打开 `gemini.google.com/usage` 还会在右下角显示一张扁平的用量预警卡（5 小时 / 每周，只读当前页数据，不额外发请求）。
 
 基于 [Sxuan-Coder/gemini_chat_export](https://github.com/Sxuan-Coder/gemini_chat_export) 早期版本深度定制，针对 Gemini 新版 UI 做了全面适配。
 
@@ -22,6 +24,7 @@
 | 备份面板 | Gemini 页面右侧出现的导出面板，展开显示各按钮 |
 | 单对话导出 | 点击"导出当前对话"后弹出下载文件的画面 |
 | 批量导出流程 | 点击"扫描/累积"→ 点"导出队列 (N)"→ 自动逐个导出 |
+| 用量预警卡 | 打开 Gemini 用量页（/usage）后，右下角出现的扁平预警卡 |
 
 *（截图放在仓库根目录 `screenshots/` 文件夹，README 会自动引用）*
 
@@ -43,6 +46,8 @@
 - 🧠 **智能标题提取**：适配 Gemini 新版 UI，多种备选逻辑确保标题正确
 - ⚙️ **可调参数**：界面内直接调节滚动延迟和历史加载延迟（适配不同网络环境）
 - ⌨️ **Alt+Q 快捷键**：快速隐藏/显示备份面板
+- 🪟 **可折叠面板**：标题栏「－」收起为右上角 `G` 小图标，点击或按 `Alt+W` 展开，折叠状态自动记忆
+- 📊 **Gemini 用量预警**：仅在 `gemini.google.com/usage` 显示；读取页面上的 5 小时 / 每周额度，≥90% 变黄、100% 变红，并按速度预测是否会在重置前用完（该页面只有这两档，没有月额度）
 - 🎨 **暗色主题面板**：固定暗色 UI，与 Gemini 界面协调
 
 ---
@@ -86,10 +91,23 @@
 
 > 💡 批量导出时请**不要操作鼠标**，让脚本自动完成。
 
+### 折叠 / 展开面板
+1. 点标题栏的 **－**，面板会收起为右上角的 `G` 小图标
+2. 点小图标或按 **Alt + W** 展开
+3. 刷新页面后会记住上次的折叠状态
+
+### 用量预警（仅 /usage）
+1. 打开 `https://gemini.google.com/usage`
+2. 页面右下角会出现一张扁平的用量卡（宽度 60% 页面宽度）
+3. 卡内显示 5 小时 / 每周的已用百分比、重置时间，以及是否会在重置前用完的预测
+4. 有风险时左侧色条变黄/红；文字太长可鼠标悬停看全文；点 **✕** 可关闭本次提示
+5. 卡片只在 /usage 页出现，不会在聊天页显示可能过期的数字
+
 ### 快捷键
 | 快捷键 | 功能 |
 |--------|------|
 | **Alt + Q** | 隐藏/显示备份面板 |
+| **Alt + W** | 折叠/展开备份面板 |
 
 ---
 
@@ -116,7 +134,7 @@
 
 ### 版本号规则
 
-当前版本：**v13.11**（对应 `@version 13.11.0`）
+当前版本：**v13.13.3**（对应 `@version 13.13.3`）
 
 版本号格式为 `主版本.次版本.修订号`：
 - 新功能 → 递增次版本号
